@@ -1,10 +1,13 @@
 import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
-const port = 3000;
-let currentUserId = 3
+const port = process.env.PORT || 3000;
+let currentUserId = 1
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -13,17 +16,15 @@ app.use(express.static("public"));
 let items = [];
 
 const db = new pg.Client({
-  user: "postgres",
-  host: "localhost",
-  database: "permalist",
-  password: "superuser",
-  port: 5433
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
+
 
 db.connect()
 
 async function listPerUser() {
-  const result = await db.query("SELECT * FROM users JOIN items ON users.id = user_id WHERE user_id = $1 ORDER BY user_id ASC;", [currentUserId]);
+  const result = await db.query("SELECT * FROM users JOIN items ON users.id = user_id WHERE user_id = $1;", [currentUserId]);
   return result.rows;
 }
 
