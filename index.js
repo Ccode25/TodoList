@@ -61,9 +61,29 @@ app.post("/edit", async (req, res) => {
 });
 
 app.post("/user", (req, res) => {
-  currentUserId = req.body.user;
-  console.log("hello");  
-  res.redirect("/");
+  if (req.body.add == "new") {
+    res.render("new.ejs");
+  }
+  else {
+    currentUserId = req.body.user;
+    res.redirect("/");
+  }
+})
+
+app.post("/new", async (req, res) => {
+  const newUser = req.body.name;
+  console.log(newUser)
+  try {
+    const result = await db.query(
+      "INSERT INTO users (name) VALUES($1) RETURNING *;",
+      [newUser]
+    );
+    currentUserId = result.rows[0].id;
+    res.redirect("/");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 })
   
 app.post("/delete", async (req, res) => {
